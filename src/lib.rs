@@ -1,3 +1,4 @@
+use bitflags::bitflags;
 use std::io;
 use std::ops::Drop;
 use std::os::raw::c_int;
@@ -5,9 +6,6 @@ use std::os::windows::io::AsRawSocket;
 use std::ptr;
 use std::time::Duration;
 use wepoll_sys as sys;
-
-#[macro_use]
-use bitflags::bitflags;
 
 /// An enum for the various `EPOLL_CTL_*` constants.
 #[repr(u32)]
@@ -57,7 +55,7 @@ impl Event {
     pub fn new(flags: EventFlag, data: u64) -> Self {
         Event {
             raw: sys::epoll_event {
-                flags: flags.bits(),
+                events: flags.bits(),
                 data: sys::epoll_data { u64: data },
             },
         }
@@ -70,7 +68,7 @@ impl Event {
 
     /// Returns the user data that is associated with this event.
     pub fn data(&self) -> u64 {
-        self.raw.data.u64
+        unsafe { self.raw.data.u64 }
     }
 }
 
@@ -123,17 +121,16 @@ pub struct Iter<'a> {
 impl<'a> Iterator for Iter<'a> {
     type Item = Event;
 
-    fn next(&self) -> Option<Event> {
+    fn next(&mut self) -> Option<Event> {
         if self.index == self.events.len() {
             return None;
         }
 
         // epoll_wait() doesn't report back the flags of events, so we can just
         // set them to 0.
-        let event = Event::new(
-            EventFlag::empty(),
-            self.events.raw[self.index].data.u64,
-        );
+        let event = Event::new(EventFlag::empty(), unsafe {
+            self.events.raw[self.index].data.u64
+        });
 
         self.index += 1;
 
@@ -203,19 +200,19 @@ impl Epoll {
         let received = unsafe {
             sys::epoll_wait(
                 self.handle,
-                &mut events.raw,
-                events.capacity(),
+                events.raw.as_mut_ptr(),
+                events.capacity() as c_int,
                 timeout_ms,
-            );
+            )
         };
 
         if received == -1 {
             return Err(io::Error::last_os_error());
         }
 
-        unsafe { events.raw.set_len(received) };
+        unsafe { events.raw.set_len(received as usize) };
 
-        Ok(received)
+        Ok(received as usize)
     }
 
     /// Registers a raw socket with `self`.
@@ -397,7 +394,7 @@ mod tests {
 
     #[test]
     fn test_poll_poll_without_timeout() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
         let mut events = Events::with_capacity(1);
 
@@ -405,30 +402,31 @@ mod tests {
             .register(&socket, EventFlag::OUT | EventFlag::ONESHOT, 42)
             .unwrap();
 
-        epoll.poll(&mut events, None);
-
+        assert_eq!(epoll.poll(&mut events, None).unwrap(), 1);
         assert_eq!(events.len(), 1);
 
         let event = events.iter().next().unwrap();
 
         assert_eq!(event.data(), 42);
-        assert_eq!(event.flags(), 0);
+        assert_eq!(event.flags(), EventFlag::empty());
     }
 
     #[test]
     fn test_poll_poll_with_timeout() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let mut events = Events::with_capacity(1);
 
-        epoll.poll(&mut events, Some(Duration::from_millis(5)));
+        epoll
+            .poll(&mut events, Some(Duration::from_millis(5)))
+            .unwrap();
 
         assert_eq!(events.len(), 0);
-        assert_eq!(events.iter().next().is_none());
+        assert!(events.iter().next().is_none());
     }
 
     #[test]
     fn test_poll_register_valid() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
 
         assert!(epoll
@@ -438,7 +436,7 @@ mod tests {
 
     #[test]
     fn test_poll_register_already_registered() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
 
         assert!(epoll
@@ -452,7 +450,7 @@ mod tests {
 
     #[test]
     fn test_poll_reregister_invalid() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
 
         assert!(epoll
@@ -462,7 +460,7 @@ mod tests {
 
     #[test]
     fn test_poll_reregister_already_registered() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
 
         assert!(epoll
@@ -476,7 +474,7 @@ mod tests {
 
     #[test]
     fn test_poll_deregister_invalid() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
 
         assert!(epoll.deregister(&socket).is_err());
@@ -484,7 +482,7 @@ mod tests {
 
     #[test]
     fn test_poll_deregister_already_registered() {
-        let epoll = Epoll::new();
+        let epoll = Epoll::new().unwrap();
         let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
 
         assert!(epoll

@@ -11,5 +11,5 @@ keywords = ["wepoll", "poll", "windows", "epoll"]
 categories = ["api-bindings", "os::windows-apis"]
 
 [dependencies]
-wepoll-sys = { version = "^1.0", default-features = false }
+wepoll-sys = "^1.0"
 bitflags = "^1.0"
