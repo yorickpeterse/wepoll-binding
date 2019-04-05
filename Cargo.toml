@@ -1,5 +1,5 @@
 [package]
-name = "wepoll2"
+name = "wepoll-binding"
 version = "1.0.0"
 authors = ["Yorick Peterse <yorickpeterse@gmail.com>"]
 edition = "2018"
