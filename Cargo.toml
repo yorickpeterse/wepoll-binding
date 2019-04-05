@@ -1,0 +1,15 @@
+[package]
+name = "wepoll2"
+version = "1.0.0"
+authors = ["Yorick Peterse <yorickpeterse@gmail.com>"]
+edition = "2018"
+description = "Safe bindings to the wepoll library"
+repository = "https://gitlab.com/yorickpeterse/wepoll2"
+readme = "README.md"
+license = "MPL-2.0"
+keywords = ["wepoll", "poll", "windows", "epoll"]
+categories = ["api-bindings", "os::windows-apis"]
+
+[dependencies]
+wepoll-sys = { version = "^1.0", default-features = false }
+bitflags = "^1.0"
