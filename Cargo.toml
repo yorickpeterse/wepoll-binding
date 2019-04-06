@@ -1,6 +1,6 @@
 [package]
 name = "wepoll-binding"
-version = "1.0.3"
+version = "1.0.4"
 authors = ["Yorick Peterse <yorickpeterse@gmail.com>"]
 edition = "2018"
 description = "Safe bindings to the wepoll library"
