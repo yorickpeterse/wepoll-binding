@@ -141,7 +141,7 @@ impl<'a> Iterator for Iter<'a> {
 /// An epoll instance.
 ///
 /// The Epoll type acts as a wrapper around wepoll's `HANDLE` type, and
-/// automatically closes it upon being dropped.
+/// automatically closed it upon being dropped.
 ///
 /// Whereas epoll on Linux supports arbitrary file descriptors, wepoll (and thus
 /// this wrapper) only supports Windows sockets.
