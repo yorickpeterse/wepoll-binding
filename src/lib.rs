@@ -158,7 +158,7 @@ impl Epoll {
     /// # Examples
     ///
     /// ```
-    /// use wepoll2::Epoll;
+    /// use wepoll_binding::Epoll;
     ///
     /// let epoll = Epoll::new().expect("Failed to create a new Epoll");
     /// ```
@@ -227,7 +227,7 @@ impl Epoll {
     /// # Examples
     ///
     /// ```
-    /// use wepoll2::{Epoll, EventFlag};
+    /// use wepoll_binding::{Epoll, EventFlag};
     /// use std::net::UdpSocket;
     ///
     /// let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
@@ -254,7 +254,7 @@ impl Epoll {
     /// # Examples
     ///
     /// ```
-    /// use wepoll2::{Epoll, EventFlag};
+    /// use wepoll_binding::{Epoll, EventFlag};
     /// use std::net::UdpSocket;
     ///
     /// let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
@@ -284,7 +284,7 @@ impl Epoll {
     /// # Examples
     ///
     /// ```
-    /// use wepoll2::{Epoll, EventFlag};
+    /// use wepoll_binding::{Epoll, EventFlag};
     /// use std::net::UdpSocket;
     ///
     /// let socket = UdpSocket::bind("0.0.0.0:0").unwrap();
