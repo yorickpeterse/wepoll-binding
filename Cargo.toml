@@ -12,8 +12,7 @@ categories = ["api-bindings", "os::windows-apis"]
 
 [package.metadata.docs.rs]
 default-target = "x86_64-pc-windows-msvc"
-no-default-features = true
 
 [dependencies]
-wepoll-sys = "^1.0"
+wepoll-sys = "^1.0.3"
 bitflags = "^1.0"
