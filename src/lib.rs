@@ -339,6 +339,9 @@ impl Epoll {
     }
 }
 
+unsafe impl Sync for Epoll {}
+unsafe impl Send for Epoll {}
+
 impl Drop for Epoll {
     fn drop(&mut self) {
         if unsafe { sys::epoll_close(self.handle) } == -1 {
