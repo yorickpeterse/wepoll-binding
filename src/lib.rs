@@ -112,6 +112,9 @@ impl Events {
     }
 }
 
+unsafe impl Sync for Events {}
+unsafe impl Send for Events {}
+
 /// An iterator over epoll events.
 pub struct Iter<'a> {
     events: &'a Events,
