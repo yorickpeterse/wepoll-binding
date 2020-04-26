@@ -14,5 +14,5 @@ categories = ["api-bindings", "os::windows-apis"]
 default-target = "x86_64-pc-windows-msvc"
 
 [dependencies]
-wepoll-sys = "^1.0.4"
+wepoll-sys = "^2.0"
 bitflags = "^1.0"
