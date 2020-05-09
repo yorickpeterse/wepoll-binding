@@ -2,7 +2,7 @@ use bitflags::bitflags;
 use std::io;
 use std::ops::Drop;
 use std::os::raw::c_int;
-use std::os::windows::io::AsRawSocket;
+use std::os::windows::io::{AsRawHandle, AsRawSocket, RawHandle};
 use std::ptr;
 use std::time::Duration;
 use wepoll_sys as sys;
@@ -350,6 +350,12 @@ impl Drop for Epoll {
         if unsafe { sys::epoll_close(self.handle) } == -1 {
             panic!("epoll_close() failed: {}", io::Error::last_os_error());
         }
+    }
+}
+
+impl AsRawHandle for Epoll {
+    fn as_raw_handle(&self) -> RawHandle {
+        self.handle
     }
 }
 
