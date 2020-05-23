@@ -129,11 +129,11 @@ impl<'a> Iterator for Iter<'a> {
             return None;
         }
 
-        // epoll_wait() doesn't report back the flags of events, so we can just
-        // set them to 0.
-        let event = Event::new(EventFlag::empty(), unsafe {
-            self.events.raw[self.index].data.u64
-        });
+        let ev = &self.events.raw[self.index];
+        let event =
+            Event::new(EventFlag::from_bits_truncate(ev.events), unsafe {
+                ev.data.u64
+            });
 
         self.index += 1;
 
@@ -362,7 +362,8 @@ impl AsRawHandle for Epoll {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::net::UdpSocket;
+    use std::io::Write;
+    use std::net::{TcpListener, TcpStream, UdpSocket};
 
     #[test]
     fn test_event_new() {
@@ -420,7 +421,31 @@ mod tests {
         let event = events.iter().next().unwrap();
 
         assert_eq!(event.data(), 42);
-        assert_eq!(event.flags(), EventFlag::empty());
+        assert_eq!(event.flags(), EventFlag::OUT);
+    }
+
+    #[test]
+    fn test_poll_in_and_rdhup() {
+        let epoll = Epoll::new().unwrap();
+        let l = TcpListener::bind("127.0.0.1:0").unwrap();
+        let socket = TcpStream::connect(l.local_addr().unwrap()).unwrap();
+        let mut s1 = l.incoming().next().unwrap().unwrap();
+        s1.write_all(b"hello").unwrap();
+        let mut events = Events::with_capacity(1);
+
+        epoll
+            .register(&socket, EventFlag::IN | EventFlag::RDHUP, 42)
+            .unwrap();
+
+        assert_eq!(epoll.poll(&mut events, None).unwrap(), 1);
+        let event = events.iter().next().unwrap();
+        assert_eq!(event.flags(), EventFlag::IN);
+
+        s1.shutdown(std::net::Shutdown::Write).unwrap();
+
+        assert_eq!(epoll.poll(&mut events, None).unwrap(), 1);
+        let event = events.iter().next().unwrap();
+        assert_eq!(event.flags(), EventFlag::IN | EventFlag::RDHUP);
     }
 
     #[test]
