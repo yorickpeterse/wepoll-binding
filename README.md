@@ -16,7 +16,7 @@ platforms):
 
 ```toml
 [dependencies.'cfg(windows)'.dependencies]
-wepoll-binding = "^2.0"
+wepoll-binding = "^3.0"
 ```
 
 Next you'll need to create an `Epoll` instance, and register some sockets with
