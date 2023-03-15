@@ -57,4 +57,4 @@ version 2.0, unless stated otherwise. A copy of this license can be found in the
 file "LICENSE".
 
 [wepoll]: https://github.com/piscisaureus/wepoll
-[wepoll-sys]: https://gitlab.com/yorickpeterse/wepoll-sys
+[wepoll-sys]: https://github.com/yorickpeterse/wepoll-sys
